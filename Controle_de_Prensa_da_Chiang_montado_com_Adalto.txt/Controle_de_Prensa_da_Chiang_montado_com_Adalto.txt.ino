@@ -24,7 +24,7 @@
 #define PT 2 //  Presa Traz PT  10  PB2
 #define AF 3 //  Agulha Fernte  AF  11  PB3
 #define AT 4 //  Agualha Traz AT  12  PB4
-#define SC 5 //  Sinal Contador SC  13  PB5
+#define SC 2 //  Sinal Contador SC  A2  PC2
 #define BI 1 //  Botão Inicio BI  A1  PC1
 #define BR 0 //  Botão Reset Co BR  A0  PC0
 
@@ -43,6 +43,7 @@ void setup() {
   DDRC = 0x0; //Define todos os pinos PC como entrada
   PORTB = 0xFE; //Define todos PB PullUP, menos 0 = RBR
   PORTC = 0xFF; //Define todos PC PullUp
+  SetBit(PORTB,SC); // Define PullUp porta para verificar
   DDRD = 0xFF; //Define todos como saida
   PORTD = 0x0; //Define todas Saidas PD como LOW
 }
@@ -55,7 +56,7 @@ void loop() {
     while (TstBit(PINB, PF)) {} // aguarda fiM do curso do pistão
     ClrBit(PORTD, RPF); // desliga o pistão da prensa
     ClrBit(PORTD, RPD);
-    if (!TstBit(PINB, 5)) { //verifica se o contador esta ativado,
+    if (!TstBit(PINC, SC)) { //verifica se o contador esta ativado,
       SetBit(PORTD, RAF); //Entra com agulha
       while (TstBit(PINB, AF)) {} // aguarda fim de curso
       ClrBit(PORTD, RAF); // Para Agulha
