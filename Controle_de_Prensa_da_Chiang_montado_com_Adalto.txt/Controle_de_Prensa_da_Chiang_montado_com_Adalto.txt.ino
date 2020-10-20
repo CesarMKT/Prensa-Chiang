@@ -46,6 +46,13 @@ void setup() {
   SetBit(PORTB,SC); // Define PullUp porta para verificar
   DDRD = 0xFF; //Define todos como saida
   PORTD = 0x0; //Define todas Saidas PD como LOW
+
+  while (TstBit(PINB,AT)){  // enquanto a agualha não estiver no final o sistema não inicia
+    SetBit(PORTD,RSS); //Liga sirene
+    delay(400);
+    ClrBit(PORTD,RSS); // Liga Sirene
+    delay(400);
+  }
 }
 
 void loop() {
@@ -58,8 +65,10 @@ void loop() {
     ClrBit(PORTD, RPD);
     if (!TstBit(PINC, SC)) { //verifica se o contador esta ativado,
       SetBit(PORTD, RAF); //Entra com agulha
+       SetBit(PORTD, RSS); //liga a sirene
       while (TstBit(PINB, AF)) {} // aguarda fim de curso
       ClrBit(PORTD, RAF); // Para Agulha
+      ClrBit(PORTD, RSS); //para sirene
       SetBit(PORTB, RBR); // Libera Botão do reset para Contador
       while (TstBit(PINC, BR)) {} // Aguarda amarrar fardo e press botão
       ClrBit(PORTB, RBR); // Trava botão do Reset novamente
