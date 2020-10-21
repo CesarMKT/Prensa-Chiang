@@ -38,6 +38,13 @@
 #define RSS 7 //  Relé Sinal Sirene RSS 7 PD7
 #define RBR 0 //  Relé Botão Reset Cont RBR 8 PB0
 
+//Variaveis de Tempo
+unsigned long tempoPistaoFrente = 2000;
+unsigned long tempoPistaoTraz=2000;
+unsigned long tempoAgulhaFrente=2000;
+unsigned long tempoAgulhaTraz=2000;
+unsigned long ativar;
+
 void setup() {
   DDRB = 0x1; //Define todos os pinos PB como entrada menos 0 = RBR
   DDRC = 0x0; //Define todos os pinos PC como entrada
@@ -46,40 +53,83 @@ void setup() {
   SetBit(PORTB,SC); // Define PullUp porta para verificar
   DDRD = 0xFF; //Define todos como saida
   PORTD = 0x0; //Define todas Saidas PD como LOW
-
-  while (TstBit(PINB,AT)){  // enquanto a agualha não estiver no final o sistema não inicia
-    SetBit(PORTD,RSS); //Liga sirene
-    delay(400);
-    ClrBit(PORTD,RSS); // Liga Sirene
-    delay(400);
-  }
+Emergencia();
+ 
 }
 
 void loop() {
-
+Emergencia();
   if (!TstBit(PINC, BI)) { // se botão iniciar por apertado
     SetBit(PORTD, RPF); //liga rele de prensa para Frente
     SetBit(PORTD, RPD);
-    while (TstBit(PINB, PF)) {} // aguarda fiM do curso do pistão
+    ativar=millis();// Registrar tempo de inicio do relé
+    while (TstBit(PINB, PF)) {
+      if(millis()-ativar>tempoPistaoFrente)PararTudo();//parar tudo por excesso de tempo
+      Emergencia();
+    SetBit(PORTD, RPF); //liga rele de prensa para Frente
+    SetBit(PORTD, RPD);
+    } // aguarda fiM do curso do pistão
     ClrBit(PORTD, RPF); // desliga o pistão da prensa
     ClrBit(PORTD, RPD);
     if (!TstBit(PINC, SC)) { //verifica se o contador esta ativado,
-      SetBit(PORTD, RAF); //Entra com agulha
-       SetBit(PORTD, RSS); //liga a sirene
-      while (TstBit(PINB, AF)) {} // aguarda fim de curso
+        SetBit(PORTD, RAF); //Entra com agulha
+        SetBit(PORTD, RSS); //liga a sirene
+        ativar=millis();// Registrar tempo de inicio do relé
+      while (TstBit(PINB, AF)) {
+        if(millis()-ativar>tempoAgulhaFrente)PararTudo();//parar tudo por excesso de tempo
+      } // aguarda fim de curso
       ClrBit(PORTD, RAF); // Para Agulha
       ClrBit(PORTD, RSS); //para sirene
       SetBit(PORTB, RBR); // Libera Botão do reset para Contador
       while (TstBit(PINC, BR)) {} // Aguarda amarrar fardo e press botão
       ClrBit(PORTB, RBR); // Trava botão do Reset novamente
       SetBit(PORTD, RAT); // Retorna agualha para descanso
-      while (TstBit(PINB, AT)) {} // Aguarda retorno da Agulha
+      ativar=millis();// Registrar tempo de inicio do relé
+      while (TstBit(PINB, AT)) {
+        if(millis()-ativar>tempoAgulhaTraz)PararTudo();//parar tudo por excesso de tempo
+      } // Aguarda retorno da Agulha
       ClrBit(PORTD, RAT); // Desliga agulha
   }
     SetBit(PORTD, RPT); // Retorna pistão de prensa
     SetBit(PORTD, RPD);
-    while (TstBit(PINB, PT)) {} // Aguarda fim de cusrso do Pistão de Prensa
+    
+      ativar=millis();// Registrar tempo de inicio do relé
+    while (TstBit(PINB, PT)) {
+      if(millis()-ativar>tempoPistaoTraz)PararTudo();//parar tudo por excesso de tempo
+      Emergencia();
+      SetBit(PORTD, RPT); // Retorna pistão de prensa
+      SetBit(PORTD, RPD);
+    } // Aguarda fim de cusrso do Pistão de Prensa
     ClrBit(PORTD, RPD); //Desliga pistão
     ClrBit(PORTD, RPT);
   }
+}
+//-----Funções----------------------------------------------------------------------
+//PararTudo **** caso o acionamento de rele exceder tempo de execução
+void PararTudo(){
+   PORTD = 0x0; //Define todas Saidas PD como LOW
+  while(1){
+    SetBit(PORTD,RSS); //Liga sirene
+    delay(500);
+    ClrBit(PORTD,RSS); // Liga Sirene
+    delay(200);
+    SetBit(PORTD,RSS); //Liga sirene
+    delay(500);
+    ClrBit(PORTD,RSS); // Liga Sirene
+    delay(1000);
+  }
+  
+}
+void Emergencia(){
+ 
+  while (TstBit(PINB,AT)){  // enquanto a agualha não estiver no final o sistema não inicia
+     ClrBit(PORTD, RPD); //Desliga pistão
+    ClrBit(PORTD, RPT);
+    ClrBit(PORTD,RPF);
+    SetBit(PORTD,RSS); //Liga sirene
+    delay(400);
+    ClrBit(PORTD,RSS); // Liga Sirene
+    delay(400);
+    
+  } 
 }
