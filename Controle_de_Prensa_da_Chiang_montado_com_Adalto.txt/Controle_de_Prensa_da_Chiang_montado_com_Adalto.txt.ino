@@ -1,5 +1,8 @@
 /*   Controle de prensa para ammarrar o fardo de aparas.
   Este arquivo foi criado por Cesar Costa e Samuel Oliveira Costa
+  Contato: 
+  Tel: (11)967274004 
+  cesarmax10@gmail.com  ; cesar_mkt@msn.com
   São Paulo, 19/10/2020.
   Exemplos:
   Para definir um pino como saída devemos setar seu respectivo bit do
